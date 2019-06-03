@@ -64,8 +64,10 @@ def mail_count(web):
 
 if __name__ == '__main__':
     ip = "https://exmail.qq.com/login"
-    user = "zhouw@windit.com.cn"
-    pwd = "Zhou2019"
+    # 写上自己的企业邮箱帐号
+    user = "***@windit.com.cn"
+    # 写上自己的密码
+    pwd = "****"
 
     wb = mail_test(ip)
     mail_fa2shou(wb)
