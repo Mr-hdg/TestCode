@@ -1,11 +1,14 @@
 import time
+import os
 from selenium import webdriver
 
 
-def mail_test(ip):
+def mail_test(ip, user, pwd):
 
+    # 获取谷歌插件的位置
+    chr_path = os.path.join(os.getcwd(),"chromedriver")
     # 用谷歌浏览器开启
-    driver = webdriver.Chrome()
+    driver = webdriver.Chrome(executable_path=chr_path)
     # 进入指定QQ企业邮箱
     driver.get(ip)
     time.sleep(2)
@@ -24,6 +27,21 @@ def mail_test(ip):
     driver.find_element_by_xpath('//*[@id="btlogin"]').click()
 
     return driver
+
+def mail_all(web):
+    time.sleep(1)
+    web.find_element_by_xpath('//*[@id="logotips"]/div/div/span[3]/a[2]').click()
+    time.sleep(1)
+    # 切换次页面
+    web.switch_to.frame("mainFrame")
+    time.sleep(1)
+    web.find_element_by_xpath('//*[@id="web_set"]/div[1]/div[1]/div/div/div[10]/a').click()
+    time.sleep(1)
+    web.find_element_by_xpath('//*[@id="poprecent"]/option[1]').click()
+    time.sleep(1)
+    web.find_element_by_xpath('//*[@id="sendbtn"]').click()
+    time.sleep(1)
+    web.switch_to.parent_frame()
 
 def mail_fa2shou(web):
     time.sleep(1)
@@ -65,9 +83,12 @@ def mail_count(web):
 if __name__ == '__main__':
     ip = "https://exmail.qq.com/login"
     # 写上自己的企业邮箱帐号
-    user = "***@windit.com.cn"
+    user = "hongzp@windit.com.cn"
     # 写上自己的密码
-    pwd = "****"
+    pwd = "Hong2019"
 
-    wb = mail_test(ip)
+    #user = input("请输入邮箱：")
+    #pwd = input("密码：")
+    wb = mail_test(ip, user, pwd)
+    mail_all(wb)
     mail_fa2shou(wb)

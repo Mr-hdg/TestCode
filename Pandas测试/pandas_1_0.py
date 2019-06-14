@@ -34,9 +34,6 @@ def pd_merge(file1, file2, val):
     #result = pd.concat([d1,d2],axis=1)
 
 
-
-
-
 if __name__ == '__main__':
     csvpath = u"D:\\STUDY\\机器学习\\12号机组\\齿轮箱低速级径向"
     #csvpath = u"D:\\STUDY\\机器学习\\12号机组\\abc"
