@@ -31,6 +31,7 @@ def mail_test(ip, user, pwd):
 def mail_all(web):
     time.sleep(1)
     web.find_element_by_xpath('//*[@id="logotips"]/div/div/span[3]/a[2]').click()
+
     time.sleep(1)
     # 切换次页面
     web.switch_to.frame("mainFrame")
