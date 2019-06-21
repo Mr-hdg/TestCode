@@ -66,3 +66,38 @@ class MySql(object):
             return data
         except Exception as err:
             print("SQL执行错误，原因：", err)
+
+    def find_tbheader(self, table_name):
+        res_list = []
+        sql = "show full fields from %s"%table_name
+        try:
+            self.cursor.execute(sql)
+            data = self.cursor.fetchall()
+            for var in data:
+                res_list.append(var[-1])
+            return res_list
+        except Exception as err:
+            print("SQL执行错误，原因：", err)
+
+    def FindAll(self, table_name):
+        # 实例变量
+        self.table_name = table_name
+        # 定义SQL语句
+        sql = "select * from %s" % (self.table_name)
+        try:
+            # 执行数据库操作
+            self.cursor.execute(sql)
+            # 处理结果
+            data = self.cursor.fetchall()
+            return data
+        except Exception as err:
+            print("SQL执行错误，原因：", err)
+
+    def show_headline(self, table_name):
+        res_list = []
+        sql = "describe " + table_name
+        self.cursor.execute(sql)
+        result = self.cursor.fetchall()
+        for var in result:
+            res_list.append(var[0])
+        return res_list

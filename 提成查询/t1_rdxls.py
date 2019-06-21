@@ -20,6 +20,8 @@ class rd_excel(object):
         xls_tb = pd.ExcelFile(file).sheet_names
         print(file,xls_tb)
         data = pd.read_excel(file, sheet_name=u"业务员")
+        header = data.columns.values.tolist()
+        print(header)
         count = data["序号"].count()
         data["备注"] = data["备注"].fillna("-")
         data = data.iloc[:,[1,2,3,4,5,6,7,8,10]].fillna(0)
@@ -42,7 +44,10 @@ if __name__ == '__main__':
         for i in data:
             my_sql.input_data(tb_name, i)
     """
-    input_name = input("请输入查询的人：")
-    res = my_sql.find_name(tb_name, input_name)
-    for var in res:
-        print(var)
+    #input_name = input("请输入查询的人：")
+    #res = my_sql.find_name(tb_name, input_name)
+    #print(res)
+    #res = my_sql.find_tbheader(tb_name)
+    #for var in res:
+        #print(var[-1])
+    my_xls.leading_file(files[0])
