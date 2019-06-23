@@ -1,10 +1,10 @@
 import sys, cgitb
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QGridLayout, QLineEdit, QLabel,
                              QDateEdit, QPushButton, QDialog, QTableWidget, QAbstractItemView,
-                             QFileDialog, QTableWidgetItem,QHeaderView, QComboBox)
-from PyQt5.QtCore import Qt, QDate, QCoreApplication, QRect, pyqtSignal
+                             QFileDialog, QTableWidgetItem,QHeaderView, QComboBox, QMessageBox, QVBoxLayout)
+from PyQt5.QtCore import Qt, QDate, QCoreApplication, QRect, pyqtSignal, QMetaObject
 import qtawesome
-from t1_main import Main_Sql
+from t2_excel import ExcelFunc, ShowExcel
 
 
 class Qt_Frame(QMainWindow):
@@ -87,15 +87,17 @@ class Qt_Frame(QMainWindow):
         self.right_layout.addWidget(self.right_close, 0, 2, 1, 1)
 
     def _opendialog(self):
-        content = self.query_name.text()
+        name = self.query_name.text()
+        job = self.job_combox.currentText()
         my = New_Dialog(self)
-        if content:
-            my._creat_table_show(content)
+        if name:
+            my._creat_table_show(name, job)
         my.exec_()
 
     def _leadialog(self):
-        my = Lead_Data(self)
+        my = Lead_Data()
         my.exec_()
+
 
 class Lead_Data(QDialog):
 
@@ -113,6 +115,7 @@ class Lead_Data(QDialog):
         self.open_button = QPushButton("打开")
         self.open_button.clicked.connect(self._openfile)
         self.lead_button = QPushButton("导入")
+        self.lead_button.clicked.connect(self._leading)
 
         self.g_layout.addWidget(self.filt_edit, 0, 1)
         self.g_layout.addWidget(self.open_button, 0, 2)
@@ -121,44 +124,60 @@ class Lead_Data(QDialog):
     def _openfile(self):
         openfile_name = QFileDialog.getOpenFileName(self, "选择文件", "", "Excel files(*.xlsx , *.xls)")
         self.file_path = openfile_name[0]
+        print(self.file_path)
+        self.filt_edit.setText(self.file_path.split("/")[-1])
 
     def _leading(self):
-        pass
+        a = ExcelFunc(self.file_path)
+        if a._wt_value():
+            QMessageBox.warning(self,
+                                 "消息框标题",
+                                 "导入成功",
+                                 QMessageBox.Yes | QMessageBox.No)
+            self.close()
+        else:
+            QMessageBox.warning(self,
+                                 "消息框标题",
+                                 "导入失败",
+                                 QMessageBox.Yes | QMessageBox.No)
+            self.close()
 
 
 class New_Dialog(QDialog):
 
     def __init__(self, *args, **kw):
         super(New_Dialog, self).__init__(*args, **kw)
-        self.data = Main_Sql()
+        self.data = ShowExcel()
         self._initUI(self)
 
-
     def _initUI(self, MainWindow):
-        MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1080, 448)
-        self.centralwidget = QWidget(MainWindow)
-        self.centralwidget.setObjectName("centralwidget")
-        self.retranslateUi(MainWindow)
+        #self.dialog_widget = QWidget()
+        self.vlayout = QVBoxLayout()
 
-        self.tableWidget = QTableWidget(self.centralwidget)
-        self.tableWidget.setGeometry(QRect(10,60,1060,380))
+        self.wf_label = QLabel("未发提成：0")
+        #self.wf_label.setGeometry(QRect(10, 0, 100, 100))
+        self.wf_label.setObjectName("wf_label")
+
+        self.tableWidget = QTableWidget(11, 10)
+        #self.tableWidget.setGeometry(QRect(10, 60, 1060, 380))
         self.tableWidget.setObjectName("tableWidget")
-        self.tableWidget.setColumnCount(0)
-        self.tableWidget.setRowCount(0)
+        self.tableWidget.setColumnCount(0)  # 设置列宽
+        self.tableWidget.setRowCount(0)  # 设置行高
         self.tableWidget.setStyleSheet("selection-background-color:pink")
         self.tableWidget.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.tableWidget.raise_()
 
-    def retranslateUi(self, MainWindow):
-        _translate = QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "小白菜"))
+        self.vlayout.addWidget(self.wf_label)
+        self.vlayout.addWidget(self.tableWidget)
 
-    def _creat_table_show(self, name):
-        mylist = self.data._header_name()
-        row, col, data = self.data._query_salesman(name)
+        self.setLayout(self.vlayout)
+
+
+    def _creat_table_show(self, name, job):
+        mylist, row, col, data = self.data.show_data(job, name)
         self.tableWidget.setColumnCount(col)
         self.tableWidget.setRowCount(row)
+        col_line = 150+col*125
         self.tableWidget.setHorizontalHeaderLabels(mylist)
         for i in range(len(data)):
             var = list(data[i])
@@ -169,6 +188,8 @@ class New_Dialog(QDialog):
                 self.tableWidget.setItem(i, j, newItem)
         #self.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.tableWidget.horizontalHeader().setSectionResizeMode(len(mylist)-1, QHeaderView.ResizeToContents)
+        self.resize(col_line,355)
+
 
 def main():
     cgitb.enable(format="text")
@@ -176,6 +197,7 @@ def main():
     win = Qt_Frame()
     win.show()
     sys.exit(app.exec_())
+
 
 if __name__ == '__main__':
     main()

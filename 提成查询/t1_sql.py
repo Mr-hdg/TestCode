@@ -75,6 +75,7 @@ class MySql(object):
             data = self.cursor.fetchall()
             for var in data:
                 res_list.append(var[-1])
+            print(res_list)
             return res_list
         except Exception as err:
             print("SQL执行错误，原因：", err)

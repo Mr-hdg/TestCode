@@ -18,7 +18,7 @@ class rd_excel(object):
     def leading_file(self, file):
         res = []
         xls_tb = pd.ExcelFile(file).sheet_names
-        print(file,xls_tb)
+        print(file, xls_tb)
         data = pd.read_excel(file, sheet_name=u"业务员")
         header = data.columns.values.tolist()
         print(header)
