@@ -124,22 +124,22 @@ class Lead_Data(QDialog):
     def _openfile(self):
         openfile_name = QFileDialog.getOpenFileName(self, "选择文件", "", "Excel files(*.xlsx , *.xls)")
         self.file_path = openfile_name[0]
-        print(self.file_path)
         self.filt_edit.setText(self.file_path.split("/")[-1])
 
     def _leading(self):
         a = ExcelFunc(self.file_path)
-        if a._wt_value():
+        try:
+            res = a._wt_value()
+        except IndexError:
             QMessageBox.warning(self,
                                  "消息框标题",
-                                 "导入成功",
+                                 "导入失败<%s>"%("excel列数少于模板列数"),
                                  QMessageBox.Yes | QMessageBox.No)
-            self.close()
         else:
             QMessageBox.warning(self,
-                                 "消息框标题",
-                                 "导入失败",
-                                 QMessageBox.Yes | QMessageBox.No)
+                                "消息框标题",
+                                "%s"%res,
+                                QMessageBox.Yes | QMessageBox.No)
             self.close()
 
 
@@ -172,9 +172,8 @@ class New_Dialog(QDialog):
 
         self.setLayout(self.vlayout)
 
-
     def _creat_table_show(self, name, job):
-        mylist, row, col, data = self.data.show_data(job, name)
+        mylist, row, col, data, res_val = self.data.show_data(job, name)
         self.tableWidget.setColumnCount(col)
         self.tableWidget.setRowCount(row)
         col_line = 150+col*125
@@ -188,6 +187,8 @@ class New_Dialog(QDialog):
                 self.tableWidget.setItem(i, j, newItem)
         #self.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.tableWidget.horizontalHeader().setSectionResizeMode(len(mylist)-1, QHeaderView.ResizeToContents)
+
+        self.wf_label.setText("未发提成：%d"%(res_val))
         self.resize(col_line,355)
 
 

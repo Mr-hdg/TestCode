@@ -43,22 +43,24 @@ class ExcelFunc(object):
         header_list = [['id', '姓名', '月份', '利润', '人数', '个人业务', '公司业务', '应发提成', '实发提成', '未发提成', '备注'],
                        ['id', '姓名', '月份', '利润', '提成', '上月未发', '实发提成', "备注"]]
         for var in yw_res:
+            for a_var in ayw_res:
+                print(var[:2], a_var[:2], var[:2] == a_var[:2])
+                if var[:2] == a_var[:2]:
+                    return "数据已经存在"
+
+        for var in yw_res:
             ayw_res.append(var)
         for var in cz_res:
             acz_res.append(var)
         all_data = [ayw_res, acz_res]
         tb_name = ["业务员", "操作员"]
-        try:
-            for i in range(len(tb_name)):
-                worksheet = workbook.add_sheet(tb_name[i])
-                self._wt_func(worksheet, header_list[i], all_data[i])
-                print(all_data[i])
-            workbook.save(data_path)
-        except Exception as e:
-            print(e)
-            return e
-        else:
-            return 1
+
+        for i in range(len(tb_name)):
+            worksheet = workbook.add_sheet(tb_name[i])
+            self._wt_func(worksheet, header_list[i], all_data[i])
+            print(all_data[i])
+        workbook.save(data_path)
+        return  "数据添加成功"
 
     def _wt_func(self, worksheet, header_list, data):
         for i in range(len(header_list)):
@@ -68,13 +70,18 @@ class ExcelFunc(object):
                 if j == 0:
                     worksheet.write(i + 1, 0, i + 1)
                 worksheet.write(i + 1, j + 1, data[i][j])
-                print(data[i][j])
 
 
 class ShowExcel(object):
 
     def show_data(self, sheet_name, query_name):
         data = pd.read_excel(data_path, sheet_name=sheet_name)
+        if sheet_name == "业务员":
+            val_col = 9
+            val = 0
+        else:
+            val_col = 0
+            val = 0
         all_data = []
         rows = data["id"].count()
         header = data.columns.values.tolist()
@@ -85,8 +92,9 @@ class ShowExcel(object):
         for i in range(rows):
             if query_name in data.loc[i][1]:
                 all_data.append(data.loc[i].tolist())
-        print(rows, cols)
-        return header, rows, cols, all_data
+                if val_col == 9:
+                    val += data.loc[i][val_col]
+        return header, rows, cols, all_data, val
 
 
 if __name__ == '__main__':
