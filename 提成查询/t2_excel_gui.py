@@ -5,13 +5,19 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QGridLayout, QL
 from PyQt5.QtCore import Qt, QDate, QCoreApplication, QRect, pyqtSignal, QMetaObject
 import qtawesome
 from t2_excel import ExcelFunc, ShowExcel
+from t2_secretfile import SecretFile
+from Mythreading import MyThread
+
 
 
 class Qt_Frame(QMainWindow):
 
     def __init__(self, *args, **kw):
         super(Qt_Frame, self).__init__(*args, **kw)
-
+        self.secret_f = SecretFile()
+        #self.secret_f._save_file("456")
+        thread = MyThread(target=self.secret_f._save_tmpfile, args=("456",))
+        thread.start()
         self._initUI()
 
     def _initUI(self):
@@ -58,7 +64,9 @@ class Qt_Frame(QMainWindow):
     def _centerUI(self):
         self.query_name = QLineEdit()
         self.query_name.setPlaceholderText("请输入要查询的名字")
-        self.query_name.setObjectName("center name")
+        self.query_secret = QLineEdit()
+        self.query_secret.setPlaceholderText("请输入密码")
+        self.query_secret.setEchoMode(QLineEdit.Password)
         self.date1 = QDateEdit(QDate.currentDate())
         self.date1.setCalendarPopup(True)
         self.date2 = QDateEdit(QDate.currentDate())
@@ -70,13 +78,11 @@ class Qt_Frame(QMainWindow):
 
         self.center_layout.addWidget(QLabel("姓名:"), 0, 0, 2, 1)
         self.center_layout.addWidget(self.query_name, 0, 1, 2, 3)
-        self.center_layout.addWidget(QLabel("类型:"), 3, 0, 2, 1)
-        self.center_layout.addWidget(self.job_combox, 3, 1, 2, 3)
-        #self.center_layout.addWidget(QLabel("起始："), 3, 0, 2, 1)
-        #self.center_layout.addWidget(self.date1, 3, 1, 2, 3)
-        #self.center_layout.addWidget(QLabel("结束："), 5, 0, 2, 1)
-        #self.center_layout.addWidget(self.date2, 5, 1, 2, 3)
-        self.center_layout.addWidget(self.button, 7, 1, 1, 3)
+        self.center_layout.addWidget(QLabel("密码:"), 3, 0, 2, 1)
+        self.center_layout.addWidget(self.query_secret, 3, 1, 2, 3)
+        self.center_layout.addWidget(QLabel("类型:"), 6, 0, 2, 1)
+        self.center_layout.addWidget(self.job_combox, 6, 1, 2, 3)
+        self.center_layout.addWidget(self.button, 9, 1, 1, 3)
 
     def _rightUI(self):
         self.right_mini = QPushButton("")  # 最小化
@@ -88,21 +94,38 @@ class Qt_Frame(QMainWindow):
 
     def _opendialog(self):
         name = self.query_name.text()
+        pwd = self.query_secret.text()
         job = self.job_combox.currentText()
         my = New_Dialog(self)
-        if name:
-            my._creat_table_show(name, job)
-        my.exec_()
+        if name and pwd:
+            if my._name_and_pwd(name, pwd):
+                QMessageBox.warning(self,
+                                    "消息框标题",
+                                    "请确帐号或密码不正确",
+                                    QMessageBox.Ok)
+                return
+            else:
+                my._creat_table_show(name, job)
+                my.exec_()
+        else:
+            QMessageBox.warning(self,
+                                "消息框标题",
+                                "请确定帐号或密码是否输入正确",
+                                QMessageBox.Ok)
 
     def _leadialog(self):
         my = Lead_Data()
         my.exec_()
+
+    def __del__(self):
+        self.secret_f._del_file()
 
 
 class Lead_Data(QDialog):
 
     def __init__(self, *args, **kw):
         super(Lead_Data, self).__init__(*args, **kw)
+        self.secret_f = SecretFile()
         self._initUI(self)
 
     def _initUI(self, MainWindow):
@@ -127,27 +150,28 @@ class Lead_Data(QDialog):
         self.filt_edit.setText(self.file_path.split("/")[-1])
 
     def _leading(self):
-        a = ExcelFunc(self.file_path)
+        a = ExcelFunc(self.file_path, self.secret_f.tmpfile)
         try:
-            res = a._wt_value()
+            self.res = a._wt_value()
         except IndexError:
             QMessageBox.warning(self,
                                  "消息框标题",
                                  "导入失败<%s>"%("excel列数少于模板列数"),
-                                 QMessageBox.Yes | QMessageBox.No)
+                                 QMessageBox.Ok)
         else:
             QMessageBox.warning(self,
                                 "消息框标题",
-                                "%s"%res,
-                                QMessageBox.Yes | QMessageBox.No)
+                                "%s"%self.res,
+                                QMessageBox.Ok)
             self.close()
-
+            self.secret_f._save_file("456")
 
 class New_Dialog(QDialog):
 
     def __init__(self, *args, **kw):
         super(New_Dialog, self).__init__(*args, **kw)
-        self.data = ShowExcel()
+        self.secret = SecretFile()
+        self.data = ShowExcel(self.secret.tmpfile)
         self._initUI(self)
 
     def _initUI(self, MainWindow):
@@ -190,6 +214,9 @@ class New_Dialog(QDialog):
 
         self.wf_label.setText("未发提成：%d"%(res_val))
         self.resize(col_line,355)
+
+    def _name_and_pwd(self, name, pwd):
+        return self.data._name_pwd(name, pwd)
 
 
 def main():
