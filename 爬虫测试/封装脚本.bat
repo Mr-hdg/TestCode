@@ -1,0 +1,1 @@
+pyinstaller -F mail_test1.py

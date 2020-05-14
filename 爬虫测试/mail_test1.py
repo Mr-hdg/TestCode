@@ -12,7 +12,7 @@ def mail_test(ip, user, pwd):
     # 进入指定QQ企业邮箱
     driver.get(ip)
     time.sleep(2)
-    driver.find_element_by_xpath('//*[@id="loginForm"]/div[3]/div[4]/a').click()
+    driver.find_element_by_xpath('//*[@id="loginForm"]/div[3]/div[3]/a[1]').click()
     time.sleep(1)
     # 清空帐号框内的内容
     driver.find_element_by_xpath('//*[@id="inputuin"]').clear()
@@ -84,12 +84,12 @@ def mail_count(web):
 if __name__ == '__main__':
     ip = "https://exmail.qq.com/login"
     # 写上自己的企业邮箱帐号
-    user = "hongzp@windit.com.cn"
+    # user = "wangjk@windit.com.cn"
     # 写上自己的密码
-    pwd = "Hong2019"
+    # pwd = "Wang2019"
 
-    #user = input("请输入邮箱：")
-    #pwd = input("密码：")
+    user = input("请输入邮箱：")
+    pwd = input("密码：")
     wb = mail_test(ip, user, pwd)
     mail_all(wb)
     mail_fa2shou(wb)

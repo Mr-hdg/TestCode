@@ -97,6 +97,7 @@ class Qt_Frame(QMainWindow):
         my = Lead_Data(self)
         my.exec_()
 
+
 class Lead_Data(QDialog):
 
     def __init__(self, *args, **kw):
